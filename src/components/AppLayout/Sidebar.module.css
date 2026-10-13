@@ -1,0 +1,20 @@
+/*
+ * The sidebar links are built on Mantine's UnstyledButton, which has no look
+ * of its own, so nothing here overrides Mantine. This adds the two things a
+ * link on the dark sidebar needs: rounded corners and a hover tint.
+ *
+ * Hover is not drawn in the Figma file; the tint is a neutral stand-in.
+ */
+.item {
+  border-radius: var(--mantine-radius-sm);
+}
+
+@media (hover: hover) {
+  .item:hover {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+}
+
+.item:focus-visible {
+  outline-color: var(--mantine-color-white);
+}

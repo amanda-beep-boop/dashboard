@@ -1,0 +1,14 @@
+/*
+ * Rows are built on Mantine's UnstyledButton, which has no look of its own,
+ * so nothing here overrides Mantine. Hover is not drawn in the Figma file;
+ * gray.0 is a neutral stand-in.
+ */
+@media (hover: hover) {
+  .row:hover {
+    background-color: var(--mantine-color-gray-0);
+  }
+}
+
+.row:focus-visible {
+  outline-offset: -2px;
+}

@@ -1,21 +1,13 @@
 // HeroBanner
 //
-// Self-contained styles for the hero banner. Nothing in this file can reach
-// outside the component, and it does not depend on anything outside it:
+// This module only does what Mantine has no component for:
+//   • the layered background (gradient, building illustration, scrim)
+//   • how the banner rearranges as its own width changes
 //
-//   • It is a CSS Module (.module.scss), so every class name is hashed at
-//     build time and cannot collide with a class elsewhere in the project.
-//   • Every rule is nested under `.root`. There are no element selectors,
-//     no :root / html / body rules, no CSS custom properties, no @keyframes
-//     and no named containers — nothing global is declared.
-//   • All values are private SCSS variables compiled into the output. It does
-//     not read Mantine's --mantine-* variables, so the host theme cannot
-//     change how the banner looks. The only thing it inherits is the font
-//     family.
-//   • Every element the banner renders has its box, type and color set here
-//     explicitly, so project-wide rules for h1, p, a, strong, svg or section
-//     do not leak in. The two-class selectors (`.root .title`) also outrank
-//     Mantine's own single-class component styles regardless of load order.
+// It never restyles a Mantine component. Title, text, button and notice get
+// their type, colour, padding and radius from Mantine props and the theme
+// (see HeroBanner.tsx). The few classes applied to them here only place them
+// in the layout (width, flex), which Mantine leaves alone.
 //
 // Layers, back to front:
 //   1. .banner background – navy gradient across the full width
@@ -24,43 +16,14 @@
 //                           over the illustration so the copy stays legible
 //   4. .content           – title, description, actions
 //
-// Responsive behavior follows the banner's own width (container queries on
-// .root), not the viewport, so it adapts to wherever it is placed:
+// Sizes follow the banner's own width (container queries on .root), not the
+// viewport, so it adapts to wherever it is placed:
 //   compact  under 30rem  – stacked, full-width button, illustration as texture
 //   medium   30rem–56rem  – text across the banner, illustration fading in
 //   wide     56rem and up – the Figma layout: text left 60%, illustration right 40%
 
-// ── Colors (sampled from the mockup) ─────────────────────────────────────────
-$hero-bg: #081c34;
-$hero-bg-end: #05366d;
-$hero-border: #0d4d80;
-$hero-white: #ffffff;
-$hero-text: #c9d6e3;
-$hero-button-bg: #1c7ed6;
-$hero-button-bg-hover: #1971c2;
-$hero-notice-bg: #0d2d54;
-$hero-accent: #7fb2f0;
-
-// ── Sizes ────────────────────────────────────────────────────────────────────
 $hero-bp-medium: 30rem;
 $hero-bp-wide: 56rem;
-
-$hero-radius: 0.5rem;
-$hero-border-width: 1px;
-$hero-padding-compact: 1.25rem;
-$hero-padding: 1.5rem;
-
-$hero-title-size-compact: 1.75rem;
-$hero-title-line-compact: 2.25rem;
-$hero-title-size: 2.25rem;
-$hero-title-line: 2.875rem;
-$hero-text-size: 0.875rem;
-$hero-button-text-size: 1rem;
-$hero-button-height: 2.25rem;
-
-// hero-building.webp already has its 12% opacity baked in. If the illustration
-// is re-exported at full opacity, set this to 0.12.
-$hero-art-opacity: 1;
 
 @mixin hero-medium {
   @container (min-width: #{$hero-bp-medium}) {
@@ -78,283 +41,167 @@ $hero-art-opacity: 1;
   // Makes the banner's width queryable by the rules below. width: 100% keeps
   // it from collapsing when the parent is a flex row or shrink-to-fit box.
   container-type: inline-size;
-  display: block;
-  box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  max-width: none;
-  // No outer spacing of its own: space it from the parent (gap, Stack, wrapper).
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
+}
 
-  .banner {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    border: $hero-border-width solid $hero-border;
-    border-radius: $hero-radius;
-    background: linear-gradient(90deg, $hero-bg 0%, $hero-bg-end 100%);
-    color: $hero-white;
+.banner {
+  // Colours that belong to this banner only. They are not Figma variables, so
+  // they live here instead of in the theme. HeroBanner.tsx passes them to
+  // Mantine components as props, e.g. c="var(--hero-text)".
+  --hero-bg: #081c34;
+  --hero-bg-end: #05366d;
+  --hero-text: #c9d6e3;
+  --hero-notice-bg: #0d2d54;
+  --hero-accent: #7fb2f0;
 
-    // Building illustration
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      background-image: url('./hero-building.webp');
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: 60% 23%;
-      opacity: $hero-art-opacity;
-      pointer-events: none;
+  // Title size steps up with the banner. The Title reads these through its
+  // `size` and `lh` props.
+  --hero-title-size: 1.75rem;
+  --hero-title-lh: 2.25rem;
 
-      @include hero-medium {
-        width: 50%;
-        background-position: 50% 23%;
-      }
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--mantine-color-navy-7);
+  border-radius: var(--mantine-radius-md);
+  background: linear-gradient(90deg, var(--hero-bg) 0%, var(--hero-bg-end) 100%);
 
-      @include hero-wide {
-        width: 40%;
-      }
-    }
-
-    // Scrim that keeps the text side legible
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background: linear-gradient(100deg, rgba($hero-bg, 0.94) 0%, rgba($hero-bg, 0.7) 100%);
-      pointer-events: none;
-
-      // Eased (S-curve) stops rather than a straight ramp, so the fade has no
-      // visible start or end line.
-      @include hero-medium {
-        background: linear-gradient(
-          90deg,
-          $hero-bg 0%,
-          $hero-bg 50%,
-          rgba($hero-bg, 0.96) 57.5%,
-          rgba($hero-bg, 0.85) 65%,
-          rgba($hero-bg, 0.65) 75%,
-          rgba($hero-bg, 0.45) 85%,
-          rgba($hero-bg, 0.34) 92.5%,
-          rgba($hero-bg, 0.3) 100%
-        );
-      }
-
-      @include hero-wide {
-        background: linear-gradient(
-          90deg,
-          $hero-bg 0%,
-          $hero-bg 61%,
-          rgba($hero-bg, 0.94) 63.25%,
-          rgba($hero-bg, 0.78) 65.5%,
-          rgba($hero-bg, 0.5) 68.5%,
-          rgba($hero-bg, 0.22) 71.5%,
-          rgba($hero-bg, 0.06) 73.75%,
-          rgba($hero-bg, 0) 76%
-        );
-      }
-    }
+  @include hero-medium {
+    --hero-title-size: 2.25rem;
+    --hero-title-lh: 2.875rem;
   }
 
-  .content {
-    position: relative;
-    z-index: 1;
-    box-sizing: border-box;
+  // Building illustration. hero-building.webp has its 12% opacity baked in.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
-    margin: 0;
-    // Side padding is measured from the banner's outer edge, as in the mockup,
-    // so the border width comes off it.
-    padding: $hero-padding-compact calc(#{$hero-padding-compact} - #{$hero-border-width});
+    background-image: url('./hero-building.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 60% 23%;
+    pointer-events: none;
 
     @include hero-medium {
-      padding: $hero-padding calc(#{$hero-padding} - #{$hero-border-width});
-    }
-
-    // Text stops at the 60% line where the illustration begins.
-    @include hero-wide {
-      width: 60%;
-      padding-right: 0;
-    }
-  }
-
-  .title {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: $hero-white;
-    font-size: $hero-title-size-compact;
-    font-style: normal;
-    font-weight: 600;
-    line-height: $hero-title-line-compact;
-    letter-spacing: normal;
-    text-align: left;
-    text-transform: none;
-    text-decoration: none;
-    text-wrap: balance;
-
-    @include hero-medium {
-      font-size: $hero-title-size;
-      line-height: $hero-title-line;
-    }
-  }
-
-  .description {
-    max-width: none;
-    margin: 0.9375rem 0 0;
-    padding: 0;
-    color: $hero-text;
-    font-size: $hero-text-size;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 1.5;
-    letter-spacing: normal;
-    text-align: left;
-    text-transform: none;
-
-    @include hero-medium {
-      max-width: 72%;
+      width: 50%;
+      background-position: 50% 23%;
     }
 
     @include hero-wide {
-      max-width: 44.5rem;
+      width: 40%;
     }
   }
 
-  // Button + notice. Stacked in the compact size. From medium up they share a
-  // row when the notice fits on one line; otherwise the notice drops below.
-  .actions {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-    margin: 2rem 0 0;
-    padding: 0;
+  // Scrim that keeps the text side legible
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--hero-bg) 94%, transparent) 0%,
+      color-mix(in srgb, var(--hero-bg) 70%, transparent) 100%
+    );
+    pointer-events: none;
 
+    // Eased (S-curve) stops rather than a straight ramp, so the fade has no
+    // visible start or end line.
     @include hero-medium {
-      flex-flow: row wrap;
-      align-items: center;
-      gap: 0.75rem 1rem;
+      background: linear-gradient(
+        90deg,
+        var(--hero-bg) 0%,
+        var(--hero-bg) 50%,
+        color-mix(in srgb, var(--hero-bg) 96%, transparent) 57.5%,
+        color-mix(in srgb, var(--hero-bg) 85%, transparent) 65%,
+        color-mix(in srgb, var(--hero-bg) 65%, transparent) 75%,
+        color-mix(in srgb, var(--hero-bg) 45%, transparent) 85%,
+        color-mix(in srgb, var(--hero-bg) 34%, transparent) 92.5%,
+        color-mix(in srgb, var(--hero-bg) 30%, transparent) 100%
+      );
     }
 
-    // Lets the row run slightly past the 60% text column so the one-line
-    // notice has room beside the button.
     @include hero-wide {
-      margin-right: -10%;
+      background: linear-gradient(
+        90deg,
+        var(--hero-bg) 0%,
+        var(--hero-bg) 61%,
+        color-mix(in srgb, var(--hero-bg) 94%, transparent) 63.25%,
+        color-mix(in srgb, var(--hero-bg) 78%, transparent) 65.5%,
+        color-mix(in srgb, var(--hero-bg) 50%, transparent) 68.5%,
+        color-mix(in srgb, var(--hero-bg) 22%, transparent) 71.5%,
+        color-mix(in srgb, var(--hero-bg) 6%, transparent) 73.75%,
+        color-mix(in srgb, var(--hero-bg) 0%, transparent) 76%
+      );
     }
   }
+}
 
-  .launch {
-    display: inline-block;
-    flex: none;
-    box-sizing: border-box;
-    width: auto;
-    height: $hero-button-height;
-    margin: 0;
-    // 2px on top sets the label 1px lower, where the mockup has it
-    padding: 0.125rem 1rem 0 0.9375rem;
-    border: 1px solid transparent;
-    border-radius: 0.375rem;
-    background: $hero-button-bg;
-    color: $hero-white;
-    font-size: $hero-button-text-size;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    text-decoration: none;
+.content {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  // Side padding is measured from the banner's outer edge, as in the mockup,
+  // so the 1px border comes off it.
+  padding: 1.25rem calc(1.25rem - 1px);
 
-    &:hover {
-      background: $hero-button-bg-hover;
-      color: $hero-white;
-      text-decoration: none;
-    }
-
-    &:focus-visible {
-      outline: 2px solid $hero-accent;
-      outline-offset: 2px;
-    }
+  @include hero-medium {
+    padding: 1.5rem calc(1.5rem - 1px);
   }
 
-  .launchIcon {
-    display: block;
-    flex: none;
-    // nudged back up so the icon stays centered while the label sits 1px low
-    position: relative;
-    top: -0.0625rem;
-    width: 0.75rem;
-    height: 0.75rem;
-    margin: 0 0 0 0.5625rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  // Text stops at the 60% line where the illustration begins.
+  @include hero-wide {
+    width: 60%;
+    padding-right: 0;
+  }
+}
+
+// Layout only: how wide the description may run.
+.description {
+  @include hero-medium {
+    max-width: 72%;
   }
 
-  .notice {
-    display: flex;
-    flex: 0 1 auto;
-    align-items: flex-start;
-    gap: 0.5625rem;
-    box-sizing: border-box;
-    min-width: 0;
-    margin: 0;
-    // 1px heavier on top sets the text where the mockup has it
-    padding: 0.5625rem 1.0625rem 0.4375rem 1rem;
-    border: 0;
-    border-radius: 0.25rem;
-    background: $hero-notice-bg;
-    color: $hero-white;
+  @include hero-wide {
+    max-width: 44.5rem;
+  }
+}
+
+// Button + notice. Stacked in the compact size. From medium up they share a
+// row when the notice fits on one line; otherwise the notice drops below.
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-xl);
+
+  @include hero-medium {
+    flex-flow: row wrap;
+    align-items: center;
+    gap: var(--mantine-spacing-sm) var(--mantine-spacing-md);
   }
 
-  .noticeIcon {
-    display: block;
-    flex: none;
-    width: 0.9375rem;
-    height: 0.9375rem;
-    // lines the icon up with the first line of text
-    margin: 0.125rem 0 0;
-    color: $hero-accent;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  // Lets the row run slightly past the 60% text column so the one-line
+  // notice has room beside the button.
+  @include hero-wide {
+    margin-right: -10%;
   }
+}
 
-  .noticeText {
-    margin: 0;
-    padding: 0;
-    color: $hero-white;
-    font-size: $hero-text-size;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 1.25rem;
-    letter-spacing: normal;
-    text-align: left;
-    text-transform: none;
-  }
+// Layout only: the button keeps its own width, the notice may shrink and wrap.
+.launch {
+  flex: none;
+}
 
-  .noticeLead {
-    color: inherit;
-    font-size: inherit;
-    font-style: normal;
-    font-weight: 700;
-  }
+.notice {
+  flex: 0 1 auto;
+  min-width: 0;
 }

@@ -5,22 +5,17 @@ import '@fontsource/source-sans-3/700.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { MantineProvider, createTheme } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import App from './App';
-
-// Source Sans 3 is my read of the typeface in the mockup – change it here if
-// the design uses something else.
-const fontFamily =
-  "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
-const theme = createTheme({
-  fontFamily,
-  headings: { fontFamily },
-});
+import { cssVariablesResolver, theme } from './theme';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="light">
+    <MantineProvider
+      theme={theme}
+      cssVariablesResolver={cssVariablesResolver}
+      defaultColorScheme="light"
+    >
       <App />
     </MantineProvider>
   </StrictMode>
