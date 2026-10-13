@@ -20,7 +20,9 @@ Then open http://localhost:5173.
 ## How styling works
 
 Styling is done at the Mantine level wherever Mantine has an answer, so
-component CSS never has to fight Mantine's own styles.
+component CSS never has to fight Mantine's own styles. [STYLING.md](STYLING.md)
+explains the rules, what to merge into a host project's theme, and how to
+diagnose a conflict.
 
 1. **Theme (`src/theme.ts`)** holds the decisions that apply across the app:
    the navy colour, the font, heading sizes, the primary button colour and its

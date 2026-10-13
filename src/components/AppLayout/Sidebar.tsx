@@ -13,6 +13,9 @@ export interface SidebarProps {
   onCollapseDesktop: () => void;
 }
 
+// Mantine's focus ring is the primary blue; on the navy sidebar it is white.
+const focusRingOnDark = { outlineColor: 'var(--mantine-color-white)' };
+
 function SectionLabel({ children, pt }: { children: ReactNode; pt: number | string }) {
   return (
     <Text size="xs" fw={600} c="navy.0" tt="uppercase" lts={1} px={8} pt={pt}>
@@ -38,6 +41,7 @@ function NavItem({ label, href, icon, hasChildren, current, onClick }: NavItemPr
       href={href}
       display="block"
       className={classes.item}
+      style={focusRingOnDark}
       aria-current={current ? 'page' : undefined}
       onClick={onClick}
     >
@@ -118,7 +122,13 @@ export function Sidebar({
 
       <div>
         <Divider color="white" />
-        <UnstyledButton display="block" w="100%" mt={12} className={classes.item}>
+        <UnstyledButton
+          display="block"
+          w="100%"
+          mt={12}
+          className={classes.item}
+          style={focusRingOnDark}
+        >
           <Group gap={8} px="md" py={4} wrap="nowrap" c="white">
             <IconSignOut size={15} />
             <Text size="sm" fw={700} lh={rem(16)}>

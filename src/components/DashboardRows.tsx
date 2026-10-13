@@ -18,6 +18,8 @@ export function DashboardRows({ items }: { items: DashboardLink[] }) {
             rel="noopener noreferrer"
             display="block"
             className={classes.row}
+            // keeps Mantine's focus ring inside the row, where the rounded list can't clip it
+            style={{ outlineOffset: -2 }}
             aria-label={`${item.title} (opens in a new tab)`}
           >
             <Group mih={43} px="md" py={8} gap={8} wrap="nowrap" justify="space-between" c="navy.5">
